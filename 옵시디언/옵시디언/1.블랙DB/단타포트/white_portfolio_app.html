@@ -16,14 +16,14 @@
 <script>
 // === DATA_START ===
 const PORTFOLIO_DATA = {
-  "lastUpdated": "2026-03-19 16:22",
-  "latestNote": "1주차_1일.md",
+  "lastUpdated": "2026-03-19 16:27",
+  "latestNote": "2026-03-19_단타포트.md",
   "inceptionDate": "2026-03-19",
   "totalAsset": 100000000,
   "summary": {
-    "todayPnl": 0.0,
+    "todayPnl": 0,
     "todayReturn": 0.0,
-    "totalPnl": 0.0,
+    "totalPnl": 0,
     "totalReturn": 0.0,
     "todayTrades": 1,
     "todayWins": 1,
@@ -50,9 +50,9 @@ const PORTFOLIO_DATA = {
   ],
   "dailyPnl": [],
   "todayReview": "",
-  "goodPoints": "- 아직 없음",
-  "badPoints": "- 아직 없음",
-  "tomorrowStrategy": "- 아직 없음"
+  "goodPoints": "",
+  "badPoints": "",
+  "tomorrowStrategy": ""
 };
 // === DATA_END ===
 </script>
@@ -513,8 +513,6 @@ const PORTFOLIO_DATA = {
   <button class="nav-tab" data-tab="stats">📈 통계</button>
   <button class="nav-tab" data-tab="journal">🧠 일지</button>
   <button class="nav-tab" data-tab="rules">📋 운용 규칙</button>
-  <button class="nav-tab" data-tab="ranking">🏆 랭킹</button>
-  <button class="nav-tab" data-tab="community">💬 게시판</button>
 </div>
 
 <div class="main">
@@ -678,69 +676,6 @@ const PORTFOLIO_DATA = {
     </div>
   </div>
 
-  <!-- ===================== 랭킹 ===================== -->
-  <div class="section" id="ranking">
-    <div class="firebase-notice" id="firebaseNoticeRank" style="display:none;">
-      ⚙️ <strong>Firebase 설정 필요</strong> — 아래 FIREBASE_CONFIG를 실제 값으로 교체하세요.
-    </div>
-    <div class="table-container ranking-container" style="margin-bottom:20px;overflow-x:auto;">
-      <div class="table-header">
-        <h3>🏆 포트폴리오 랭킹</h3>
-        <button class="btn btn-primary" style="font-size:12px;padding:5px 12px;" id="btnPortForm" onclick="showRankView('portForm')">✏️ 내 포트 등록</button>
-      </div>
-      <table>
-        <thead>
-          <tr><th>순위</th><th>닉네임</th><th>누적 수익률</th><th>전략 코멘트</th><th>업데이트</th></tr>
-        </thead>
-        <tbody id="leaderboardBody">
-          <tr><td colspan="5" style="text-align:center;padding:28px;color:var(--text3);">로딩 중...</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div id="rankPortForm" style="display:none;">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;">
-        <button class="btn btn-secondary" onclick="showRankView('main')">← 뒤로</button>
-        <h3 style="margin:0;font-size:15px;font-weight:600;">✏️ 내 포트 등록 / 업데이트</h3>
-      </div>
-      <div class="chart-card full" style="box-shadow:none;">
-        <div class="form-row">
-          <div class="form-group"><label>닉네임 (최대 10자)</label><input id="portNick" type="text" placeholder="예: 단타왕" maxlength="10"></div>
-          <div class="form-group"><label>누적 수익률 (%)</label><input id="portReturn" type="number" step="0.01" placeholder="예: 5.23"></div>
-        </div>
-        <div class="form-group"><label>전략 코멘트 (최대 80자)</label><input id="portComment" type="text" placeholder="예: 수급+모멘텀 국내 단타" maxlength="80"></div>
-        <button class="btn btn-primary" onclick="submitPortfolio()">등록 / 업데이트</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===================== 게시판 ===================== -->
-  <div class="section" id="community">
-    <div class="comm-stats">
-      <div class="stat-card"><div class="stat-num" id="statToday">—</div><div class="stat-label">오늘 접속</div></div>
-      <div class="stat-card"><div class="stat-num" id="statTotal">—</div><div class="stat-label">누적 방문</div></div>
-      <div class="stat-card"><div class="stat-num" id="statMembers">—</div><div class="stat-label">포트 참여자</div></div>
-    </div>
-    <div id="commMain">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-        <h3 style="font-size:15px;font-weight:600;">💬 자유게시판</h3>
-        <button class="btn btn-primary" style="font-size:12px;padding:5px 12px;" onclick="showCommView('postForm')">✍️ 글 올리기</button>
-      </div>
-      <div id="postsList"><p style="text-align:center;color:var(--text3);padding:28px;">로딩 중...</p></div>
-    </div>
-    <div id="commPostForm" style="display:none;">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
-        <button class="btn btn-secondary" onclick="showCommView('main')">← 뒤로</button>
-        <h3 style="margin:0;font-size:15px;font-weight:600;">✍️ 글 올리기</h3>
-      </div>
-      <div class="chart-card full" style="box-shadow:none;">
-        <div class="form-group" style="margin-bottom:10px;"><label>닉네임 (최대 10자)</label><input id="postNick" type="text" placeholder="닉네임" maxlength="10"></div>
-        <div class="form-group" style="margin-bottom:10px;"><label>내용 (최대 200자)</label>
-          <textarea id="postContent" placeholder="오늘 단타 어떠셨나요? ⚡" maxlength="200" style="width:100%;min-height:90px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:9px;font-family:inherit;font-size:13px;resize:vertical;box-sizing:border-box;outline:none;"></textarea>
-        </div>
-        <button class="btn btn-primary" onclick="submitPost()">글 올리기</button>
-      </div>
-    </div>
-  </div>
 
 </div><!-- /main -->
 
@@ -752,8 +687,6 @@ const PORTFOLIO_DATA = {
     <button class="bottom-tab" data-tab="stats"><span class="icon">📈</span>통계</button>
     <button class="bottom-tab" data-tab="journal"><span class="icon">🧠</span>일지</button>
     <button class="bottom-tab" data-tab="rules"><span class="icon">📋</span>규칙</button>
-    <button class="bottom-tab" data-tab="ranking"><span class="icon">🏆</span>랭킹</button>
-    <button class="bottom-tab" data-tab="community"><span class="icon">💬</span>게시판</button>
   </div>
 </div>
 
