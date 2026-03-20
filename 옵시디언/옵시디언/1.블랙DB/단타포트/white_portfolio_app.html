@@ -16,8 +16,8 @@
 <script>
 // === DATA_START ===
 const PORTFOLIO_DATA = {
-  "lastUpdated": "2026-03-19 16:30",
-  "latestNote": "2026-03-19_단타포트.md",
+  "lastUpdated": "2026-03-20 16:05",
+  "latestNote": "2026-03-19.md",
   "inceptionDate": "2026-03-17",
   "totalAsset": 100000000,
   "summary": {
@@ -1467,10 +1467,21 @@ function showToast(msg) {
 
 // === PWA 설치 배너 ===
 let deferredPrompt;
+
+// Chrome이 설치 준비되면 deferredPrompt 저장 (preventDefault 제거 → Chrome 자체 팝업도 허용)
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
   deferredPrompt = e;
-  showInstallBanner();
+  // 이벤트 발동 즉시 설치 버튼 텍스트 업데이트
+  const btn = document.getElementById('installBtn');
+  if (btn) btn.textContent = '설치';
+});
+
+// 앱이 이미 설치된 상태(standalone)가 아니면 배너 표시
+window.addEventListener('load', () => {
+  if (!window.matchMedia('(display-mode: standalone)').matches) {
+    showInstallBanner();
+  }
 });
 
 function showInstallBanner() {
@@ -1483,21 +1494,24 @@ function showInstallBanner() {
       <div style="font-weight:700;margin-bottom:2px">📱 앱으로 설치하기</div>
       <div style="font-size:12px;opacity:0.85">홈 화면에 추가하면 앱처럼 사용 가능!</div>
     </div>
-    <button onclick="installPWA()" style="background:#ffffff;color:#2563eb;border:none;padding:8px 16px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;margin-left:8px;white-space:nowrap">설치</button>
+    <button id="installBtn" onclick="installPWA()" style="background:#ffffff;color:#2563eb;border:none;padding:8px 16px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;margin-left:8px;white-space:nowrap">설치</button>
     <button onclick="this.parentElement.remove()" style="background:none;border:none;color:rgba(255,255,255,0.7);font-size:20px;cursor:pointer;margin-left:4px;padding:4px 8px">&times;</button>
   `;
   document.body.prepend(banner);
 }
 
 function installPWA() {
-  if (!deferredPrompt) return;
-  deferredPrompt.prompt();
-  deferredPrompt.userChoice.then(result => {
-    if (result.outcome === 'accepted') showToast('앱 설치 완료!');
-    deferredPrompt = null;
-    const b = document.getElementById('installBanner');
-    if (b) b.remove();
-  });
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(result => {
+      if (result.outcome === 'accepted') showToast('앱 설치 완료!');
+      deferredPrompt = null;
+      const b = document.getElementById('installBanner');
+      if (b) b.remove();
+    });
+  } else {
+    showToast('브라우저 메뉴 → 홈 화면에 추가 를 눌러주세요');
+  }
 }
 
 // Service Worker 등록
