@@ -1,0 +1,15 @@
+{
+  "id": "/white-portfolio/yeouido-lunch.html",
+  "name": "여의도 런치 리포트",
+  "short_name": "런치리포트",
+  "description": "여의도역 점심 맛집 170곳 추천 앱",
+  "start_url": "/white-portfolio/yeouido-lunch.html",
+  "scope": "/white-portfolio/",
+  "display": "standalone",
+  "background_color": "#f2f4f7",
+  "theme_color": "#17233b",
+  "icons": [
+    { "src": "icon-lunch-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-lunch-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
