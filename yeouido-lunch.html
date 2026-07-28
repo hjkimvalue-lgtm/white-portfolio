@@ -425,6 +425,7 @@
   footer b { color: var(--muted); }
 
   /* ── install banner ── */
+  .install-btn { display: block; width: 100%; margin-top: 14px; padding: 11px 13px; font-size: 14px; }
   .install-banner {
     position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 90;
     background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
@@ -456,6 +457,7 @@
     <h1>여의도<span class="thin"> 런치 </span>리포트</h1>
     <p class="tagline">오늘 뭐 먹지? 조건만 고르면 여의도역 주변 점심 종목을 애널리스트처럼 추천해 드립니다.</p>
     <div class="ticker" id="ticker"></div>
+    <button class="btn primary install-btn" id="install-btn" type="button" style="display:none">📲 앱으로 설치하기</button>
   </header>
 
   <section class="panel" aria-label="오늘의 날씨">
@@ -1185,52 +1187,96 @@ function renderAll() {
 renderAll();
 renderNotes();
 
-/* ── PWA install banner (active on the github.io deployment) ── */
+/* ── PWA install (active on the github.io deployment) ── */
 (function () {
   if (!/github\.io$/.test(location.hostname)) return;
   if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) return;
-  let dismissedAt = 0;
-  try { dismissedAt = Number(localStorage.getItem('ylr-install-dismissed') || 0); } catch (e) {}
-  if (Date.now() - dismissedAt < 14 * 86400000) return;
+
+  const installBtn = document.getElementById('install-btn');
+  installBtn.style.display = '';
 
   let deferred = null;
   const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+  const DISMISS_KEY = 'ylr-install-dismissed-v2';
+  function dismissedRecently() {
+    try { return Date.now() - Number(localStorage.getItem(DISMISS_KEY) || 0) < 3 * 86400000; } catch (e) { return false; }
+  }
 
   function showBanner(mode) {
-    if (document.getElementById('install-banner')) return;
+    const old = document.getElementById('install-banner');
+    if (old) old.remove();
     const el = document.createElement('div');
     el.className = 'install-banner';
     el.id = 'install-banner';
     el.innerHTML = mode === 'ios'
       ? '<div class="ib-text"><b>📲 앱으로 설치하기</b><br>Safari 하단 <b>공유 버튼(⬆️)</b>을 누르고 <b>「홈 화면에 추가」</b>를 선택하면 앱처럼 쓸 수 있어요.</div>' +
         '<div class="ib-actions"><button class="btn" type="button" id="ib-close">닫기</button></div>'
+      : mode === 'manual'
+      ? '<div class="ib-text"><b>📲 설치 방법</b><br>브라우저 메뉴(⋮ 또는 공유)에서 <b>「홈 화면에 추가」</b> 또는 <b>「앱 설치」</b>를 선택하세요. 카카오톡 안에서 열었다면 먼저 <b>「다른 브라우저로 열기」</b>를 해주세요.</div>' +
+        '<div class="ib-actions"><button class="btn" type="button" id="ib-close">닫기</button></div>'
       : '<div class="ib-text"><b>📲 앱으로 설치하기</b><br>홈 화면에 추가하면 매일 탭 한 번으로 열려요.</div>' +
         '<div class="ib-actions"><button class="btn primary" type="button" id="ib-install">설치</button><button class="btn" type="button" id="ib-close">나중에</button></div>';
     document.body.appendChild(el);
     el.querySelector('#ib-close').addEventListener('click', () => {
       el.remove();
-      try { localStorage.setItem('ylr-install-dismissed', String(Date.now())); } catch (e) {}
+      try { localStorage.setItem(DISMISS_KEY, String(Date.now())); } catch (e) {}
     });
     const ins = el.querySelector('#ib-install');
-    if (ins) ins.addEventListener('click', async () => {
-      if (!deferred) { el.remove(); return; }
+    if (ins) ins.addEventListener('click', doInstall);
+  }
+
+  async function doInstall() {
+    if (deferred) {
       deferred.prompt();
       try { await deferred.userChoice; } catch (e) {}
       deferred = null;
-      el.remove();
-    });
+      const el = document.getElementById('install-banner');
+      if (el) el.remove();
+    } else if (isIOS) {
+      showBanner('ios');
+    } else {
+      showBanner('manual');
+    }
   }
+  installBtn.addEventListener('click', doInstall);
 
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferred = e;
-    showBanner('android');
+    if (!dismissedRecently()) showBanner('android');
   });
   window.addEventListener('appinstalled', () => {
+    installBtn.style.display = 'none';
     const el = document.getElementById('install-banner');
     if (el) el.remove();
     showToast('📲 설치 완료! 홈 화면에서 열어보세요');
   });
-  if (isIOS) setTimeout(() => showBanner('ios'), 1200);
+  if (isIOS && !dismissedRecently()) setTimeout(() => showBanner('ios'), 1200);
+})();
+
+/* ── stale-cache detector: fetch fresh copy, offer one-tap update ── */
+const APP_VERSION = '3.2.0';
+(function () {
+  if (!/github\.io$/.test(location.hostname)) return;
+  setTimeout(async () => {
+    try {
+      const res = await fetch(location.pathname, { cache: 'no-store' });
+      if (!res.ok) return;
+      const text = await res.text();
+      const m = text.match(/APP_VERSION = '([0-9.]+)'/);
+      if (!m || m[1] === APP_VERSION) return;
+      if (document.getElementById('update-banner')) return;
+      const bar = document.createElement('div');
+      bar.className = 'install-banner';
+      bar.id = 'update-banner';
+      bar.innerHTML =
+        '<div class="ib-text"><b>🔄 새 버전이 나왔어요</b><br>최신 식당 데이터와 기능으로 바로 업데이트할 수 있어요.</div>' +
+        '<div class="ib-actions"><button class="btn primary" type="button" id="ub-go">업데이트</button></div>';
+      document.body.appendChild(bar);
+      document.getElementById('ub-go').addEventListener('click', () => {
+        location.replace(location.pathname + '?v=' + m[1]);
+      });
+    } catch (e) {}
+  }, 2500);
 })();
 </script>
