@@ -1,8 +1,8 @@
 {
   "id": "/white-portfolio/yeouido-lunch.html",
-  "name": "여의도 런치 리포트",
-  "short_name": "런치리포트",
-  "description": "여의도역 점심 맛집 170곳 추천 앱",
+  "name": "서울 맛집 리포트",
+  "short_name": "맛집리포트",
+  "description": "서울 전역 인증 맛집 추천 앱",
   "start_url": "/white-portfolio/yeouido-lunch.html",
   "scope": "/white-portfolio/",
   "display": "standalone",
